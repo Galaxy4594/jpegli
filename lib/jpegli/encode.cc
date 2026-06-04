@@ -29,9 +29,9 @@
 #include "lib/jpegli/input.h"
 #include "lib/jpegli/memory_manager.h"
 #include "lib/jpegli/quant.h"
+#include "lib/jpegli/sharp_yuv.h"
 #include "lib/jpegli/simd.h"
 #include "lib/jpegli/types.h"
-#include "lib/jpegli/sharp_yuv.h"
 
 namespace jpegli {
 
