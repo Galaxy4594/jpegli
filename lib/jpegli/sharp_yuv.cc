@@ -7,7 +7,6 @@
 #include "lib/jpegli/sharp_yuv.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <cstring>
 
 #include "lib/jpegli/common.h"
