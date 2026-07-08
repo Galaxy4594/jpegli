@@ -140,6 +140,10 @@ struct jpeg_comp_master {
   float psnr_tolerance;
   float min_distance;
   float max_distance;
+  float brown_boost;
+  float modified_cb_quant_matrix[64];
+  float modified_cb_zero_bias_lq[64];
+  float modified_cb_zero_bias_hq[64];
   jpegli::RowBuffer<float> sharpyuv_workspace[13];
 };
 

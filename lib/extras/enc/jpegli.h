@@ -40,6 +40,7 @@ struct JpegSettings {
   float search_tolerance = 0.01;
   float min_distance = 0.1f;
   float max_distance = 25.0f;
+  float brown_boost = 0.0f;
   // If not empty, must contain concatenated APP marker segments. In this case,
   // these and only these APP marker segments will be written to the JPEG
   // output. In xyb mode app_data must not contain an ICC profile, in this

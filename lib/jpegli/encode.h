@@ -72,6 +72,8 @@ void jpegli_suppress_tables(j_compress_ptr cinfo, boolean suppress);
 void jpegli_calc_jpeg_dimensions(j_compress_ptr cinfo);
 #endif
 
+void jpegli_set_brown_boost(j_compress_ptr cinfo, float boost);
+
 void jpegli_copy_critical_parameters(j_decompress_ptr srcinfo,
                                      j_compress_ptr dstinfo);
 

@@ -86,6 +86,7 @@ void InitializeCompressParams(j_compress_ptr cinfo) {
   cinfo->master->psnr_tolerance = 0.01f;
   cinfo->master->min_distance = 0.1f;
   cinfo->master->max_distance = 25.0f;
+  cinfo->master->brown_boost = 0.0f;
 }
 
 float LinearQualityToDistance(int scale_factor) {
@@ -864,6 +865,11 @@ void jpegli_set_distance(j_compress_ptr cinfo, float distance,
   cinfo->master->force_baseline = FROM_JXL_BOOL(force_baseline);
   float distances[NUM_QUANT_TBLS] = {distance, distance, distance};
   jpegli::SetQuantMatrices(cinfo, distances, /*add_two_chroma_tables=*/true);
+}
+
+void jpegli_set_brown_boost(j_compress_ptr cinfo, float boost) {
+  CheckState(cinfo, jpegli::kEncStart);
+  cinfo->master->brown_boost = boost;
 }
 
 float jpegli_quality_to_distance(int quality) {

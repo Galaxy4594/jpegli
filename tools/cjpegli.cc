@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "lib/base/common.h"
 #include "lib/base/printf_macros.h"
@@ -216,6 +217,34 @@ int CJpegliMain(int argc, const char* argv[]) {
   if (!args.quiet) {
     fprintf(stderr, "Read %ux%u image, %" PRIuS " bytes.\n", ppf.info.xsize,
             ppf.info.ysize, input_bytes.size());
+  }
+
+  {
+    float brown_pixels = 0.0f;
+    float total_pixels = 0.0f;
+    const jxl::extras::PackedImage& img = ppf.frames[0].color;
+    if (img.format.num_channels >= 3) {
+      for (size_t y = 0; y < img.ysize; ++y) {
+        for (size_t x = 0; x < img.xsize; ++x) {
+          float r = img.GetPixelValue(y, x, 0);
+          float g = img.GetPixelValue(y, x, 1);
+          float b = img.GetPixelValue(y, x, 2);
+          if (r > g && g > b && r < 0.8f && r > 0.2f && (r - g) > 0.05f) {
+            brown_pixels += 1.0f;
+          }
+          total_pixels += 1.0f;
+        }
+      }
+    }
+    float brown_boost = 0.0f;
+    if (total_pixels > 0) {
+      brown_boost = brown_pixels / total_pixels;
+      brown_boost = std::min(1.0f, brown_boost * 10.0f); 
+    }
+    args.settings.brown_boost = brown_boost;
+    if (!args.quiet) {
+      fprintf(stderr, "Brown/Dark-Yellow boost factor: %.3f\n", brown_boost);
+    }
   }
 
   if (!ValidateArgs(args) || !SetDistance(args, cmdline, &args.settings)) {

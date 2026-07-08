@@ -664,7 +664,16 @@ void SetQuantMatrices(j_compress_ptr cinfo, float distances[NUM_QUANT_TBLS],
       cinfo->comp_info[2].quant_tbl_no = 2;
       num_base_tables = 3;
       base_quant_matrix[0] = kBaseQuantMatrixYCbCr;
-      base_quant_matrix[1] = kBaseQuantMatrixYCbCr + DCTSIZE2;
+      if (m->brown_boost > 0.0f) {
+        for (int i = 0; i < DCTSIZE2; ++i) {
+          float cb = kBaseQuantMatrixYCbCr[DCTSIZE2 + i];
+          float cr = kBaseQuantMatrixYCbCr[2 * DCTSIZE2 + i];
+          m->modified_cb_quant_matrix[i] = cb + m->brown_boost * (cr - cb);
+        }
+        base_quant_matrix[1] = m->modified_cb_quant_matrix;
+      } else {
+        base_quant_matrix[1] = kBaseQuantMatrixYCbCr + DCTSIZE2;
+      }
       base_quant_matrix[2] = kBaseQuantMatrixYCbCr + 2 * DCTSIZE2;
     } else {
       num_base_tables = 2;
@@ -701,6 +710,13 @@ void SetQuantMatrices(j_compress_ptr cinfo, float distances[NUM_QUANT_TBLS],
       (*qtable)->quantval[k] = std::max(1, std::min(qval, quant_max));
     }
     (*qtable)->sent_table = FALSE;
+    if (m->brown_boost > 0.0f && (quant_idx == 1 || quant_idx == 2)) {
+      fprintf(stderr, "Final Quant Table %d: ", quant_idx);
+      for (int k = 0; k < DCTSIZE2; ++k) {
+        fprintf(stderr, "%d ", (*qtable)->quantval[k]);
+      }
+      fprintf(stderr, "\n");
+    }
   }
 }
 
@@ -750,9 +766,21 @@ void InitQuantizer(j_compress_ptr cinfo, QuantPass pass) {
         for (int k = 0; k < DCTSIZE2; ++k) {
           float mul0 = kZeroBiasMulYCbCrLQ[c * DCTSIZE2 + k];
           float mul1 = kZeroBiasMulYCbCrHQ[c * DCTSIZE2 + k];
+          if (c == 1 && m->brown_boost > 0.0f) {
+            float mul0_cr = kZeroBiasMulYCbCrLQ[2 * DCTSIZE2 + k];
+            float mul1_cr = kZeroBiasMulYCbCrHQ[2 * DCTSIZE2 + k];
+            mul0 = mul0 + m->brown_boost * (mul0_cr - mul0);
+            mul1 = mul1 + m->brown_boost * (mul1_cr - mul1);
+          }
           m->zero_bias_mul[c][k] = mix0 * mul0 + mix1 * mul1;
           m->zero_bias_offset[c][k] =
               k == 0 ? kZeroBiasOffsetYCbCrDC[c] : kZeroBiasOffsetYCbCrAC[c];
+          if (c == 1 && m->brown_boost > 0.0f) {
+            float std_mul = k == 0 ? 0.0f : 0.5f;
+            float std_offset = k == 0 ? 0.0f : 0.5f;
+            m->zero_bias_mul[c][k] += m->brown_boost * (std_mul - m->zero_bias_mul[c][k]);
+            m->zero_bias_offset[c][k] += m->brown_boost * (std_offset - m->zero_bias_offset[c][k]);
+          }
         }
       }
     }
@@ -761,6 +789,10 @@ void InitQuantizer(j_compress_ptr cinfo, QuantPass pass) {
       for (int k = 0; k < DCTSIZE2; ++k) {
         m->zero_bias_offset[c][k] =
             k == 0 ? kZeroBiasOffsetYCbCrDC[c] : kZeroBiasOffsetYCbCrAC[c];
+        if (c == 1 && m->brown_boost > 0.0f) {
+          float std_offset = k == 0 ? 0.0f : 0.5f;
+          m->zero_bias_offset[c][k] += m->brown_boost * (std_offset - m->zero_bias_offset[c][k]);
+        }
       }
     }
   }

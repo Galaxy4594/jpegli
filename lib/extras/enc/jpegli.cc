@@ -464,6 +464,9 @@ Status EncodeJpeg(const PackedPixelFile& ppf, const JpegSettings& jpeg_settings,
     if (jpeg_settings.use_sharpyuv) {
       jpegli_set_sharp_yuv(&cinfo, TRUE);
     }
+    if (jpeg_settings.brown_boost > 0.0f) {
+      jpegli_set_brown_boost(&cinfo, jpeg_settings.brown_boost);
+    }
     if (jpeg_settings.psnr_target > 0.0) {
       jpegli_set_psnr(&cinfo, jpeg_settings.psnr_target,
                       jpeg_settings.search_tolerance,
