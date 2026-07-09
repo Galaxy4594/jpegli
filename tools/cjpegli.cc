@@ -213,6 +213,33 @@ int CJpegliMain(int argc, const char* argv[]) {
             ppf.info.ysize, input_bytes.size());
   }
 
+  {
+    float brown_pixels = 0.0f;
+    float total_pixels = 0.0f;
+    for (const auto& img : ppf.frames) {
+      for (size_t y = 0; y < img.color.ysize; ++y) {
+        for (size_t x = 0; x < img.color.xsize; ++x) {
+          float r = img.color.GetPixelValue(y, x, 0);
+          float g = img.color.GetPixelValue(y, x, 1);
+          float b = img.color.GetPixelValue(y, x, 2);
+          if (r > g && g > b && r < 0.8f && r > 0.2f && (r - g) > 0.05f) {
+            brown_pixels += 1.0f;
+          }
+          total_pixels += 1.0f;
+        }
+      }
+    }
+    float brown_boost = 0.0f;
+    if (total_pixels > 0) {
+      brown_boost = brown_pixels / total_pixels;
+      brown_boost = std::min(1.0f, brown_boost * 10.0f); 
+    }
+    args.settings.brown_boost = brown_boost;
+    if (!args.quiet) {
+      fprintf(stderr, "Brown/Dark-Yellow boost factor: %.3f\n", brown_boost);
+    }
+  }
+
   if (!ValidateArgs(args) || !SetDistance(args, cmdline, &args.settings)) {
     return EXIT_FAILURE;
   }

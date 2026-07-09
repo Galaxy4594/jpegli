@@ -44,6 +44,7 @@ struct JpegSettings {
   // output. In xyb mode app_data must not contain an ICC profile, in this
   // case an additional APP2 ICC profile for the XYB colorspace will be emitted.
   std::vector<uint8_t> app_data;
+  float brown_boost = 0.0f;
 };
 
 Status EncodeJpeg(const PackedPixelFile& ppf, const JpegSettings& jpeg_settings,

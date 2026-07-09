@@ -156,6 +156,8 @@ void jpegli_set_progressive_level(j_compress_ptr cinfo, int level);
 // AC coefficients. Must be called before jpegli_set_defaults().
 void jpegli_use_standard_quant_tables(j_compress_ptr cinfo);
 
+void jpegli_set_brown_boost(j_compress_ptr cinfo, float boost);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
